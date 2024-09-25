@@ -21,11 +21,11 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
     constructor(address initialOwner, uint tokenSupply) ERC20("Degen", "DGN") Ownable(initialOwner) {
         mint(initialOwner, tokenSupply);
         
-        items[1] = Item("Novice Navigator", 1, 100);
-        items[2] = Item("Mythic Maverick", 2, 700);
-        items[3] = Item("Celestial Crusher", 3, 1200);
-        items[4] = Item("Astral Ace", 4, 2200);
-        items[5] = Item("Divine Dominator", 5, 2400);
+        items[1] = Item("Bronze Coin", 1, 100);
+        items[2] = Item("Silver Coin", 2, 700);
+        items[3] = Item("Gold Coin", 3, 1200);
+        items[4] = Item("Brass Coin", 4, 2200);
+        items[5] = Item("Diamond Coin", 5, 2400);
         tokenId = 6;
     }
 
