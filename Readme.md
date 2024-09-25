@@ -28,69 +28,95 @@ The ERC-20 token contract follows the ERC-20 standard closely to ensure interope
 5. Burning tokens: Anyone should be able to burn tokens, that they own, that are no longer needed.
 */
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract DegenToken is ERC20, Ownable, ERC20Burnable {
-    struct Inventory {
-        uint bronzeCoin;
-        uint copperCoin;
-        uint crystal;
-        uint elixir;
+
+    struct Item {
+        string name;
+        uint8 itemId;
+        uint256 price;
+    }
+    mapping (uint8 => Item) public items;
+    uint8 public tokenId;
+    
+    event ItemPurchased(address indexed buyer, uint8 itemId, string itemName, uint256 price);
+    event GameOutcome(address indexed player, uint256 num, bool won, string result);
+
+    constructor(address initialOwner, uint tokenSupply) ERC20("Degen", "DGN") Ownable(initialOwner) {
+        mint(initialOwner, tokenSupply);
+        
+        items[1] = Item("Novice Navigator", 1, 100);
+        items[2] = Item("Mythic Maverick", 2, 700);
+        items[3] = Item("Celestial Crusher", 3, 1200);
+        items[4] = Item("Astral Ace", 4, 2200);
+        items[5] = Item("Divine Dominator", 5, 2400);
+        tokenId = 6;
     }
 
-    mapping(address => Inventory) public playerInventory;
-
-    // Numerical identifiers for items
-    uint constant BRONZE_COIN = 1;
-    uint constant COPPER_COIN = 2;
-    uint constant CRYSTAL = 3;
-    uint constant ELIXIR = 4;
-
-    // Events
-    event MintCompleted(address indexed receiver, uint quantity);
-    event TokensMoved(address indexed sender, address indexed receiver, uint quantity);
-    event AssetRedeemed(address indexed player, uint assetId, uint cost);
-    event TokensDestroyed(address indexed sender, uint quantity);
-
-    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {}
-
-    function mint(address recipient, uint quantity) external onlyOwner {
-        _mint(recipient, quantity);
-        emit MintCompleted(recipient, quantity);
+    // Overriding decimals to 0
+    function decimals() override public pure returns (uint8){
+        return 0;
     }
 
-    function transferTokens(address recipient, uint quantity) public {
-        require(quantity <= balanceOf(msg.sender), "Insufficient balance");
-        _transfer(msg.sender, recipient, quantity);
-        emit TokensMoved(msg.sender, recipient, quantity);
+    // Minting tokens - Only the owner can mint tokens
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
     }
 
-    function redeemAsset(uint assetId, uint cost) public {
-        require(assetId >= BRONZE_COIN && assetId <= ELIXIR, "Invalid asset ID");
-        require(balanceOf(msg.sender) >= cost, "Insufficient balance");
+    // Transferring tokens using the standard ERC20 transfer method
+    function transferToken(address _recipient, uint256 _amount) external {
+        transfer(_recipient, _amount); // The ERC20 transfer function handles balance checks and transfer
+    }
 
-        if (assetId == BRONZE_COIN) {
-            playerInventory[msg.sender].bronzeCoin += 1;
-        } else if (assetId == COPPER_COIN) {
-            playerInventory[msg.sender].copperCoin += 1;
-        } else if (assetId == CRYSTAL) {
-            playerInventory[msg.sender].crystal += 1;
-        } else if (assetId == ELIXIR) {
-            playerInventory[msg.sender].elixir += 1;
+    // Redeeming tokens (store items or bonuses)
+    function welcomeBonus() public {
+        require(balanceOf(msg.sender) == 0, "You've already claimed your welcome bonus");
+        _mint(msg.sender, 50);
+    }
+
+    function addItem(string memory _name, uint256 _price) public onlyOwner {
+        items[tokenId] = Item(_name, tokenId, _price);
+        tokenId++;
+    }
+
+    function isLessThanFive(bool _prediction, uint256 _betAmount) public {
+        uint randomNumber = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender))) % 10;
+
+        if (_prediction == (randomNumber < 5)) {
+            _mint(msg.sender, _betAmount * 2);
+            emit GameOutcome(msg.sender, randomNumber, true, "won");
+        } else {
+            burn(_betAmount);
+            emit GameOutcome(msg.sender, randomNumber, false, "lost");
         }
-
-        _burn(msg.sender, cost);
-        emit AssetRedeemed(msg.sender, assetId, cost);
     }
 
-    function viewBalance() public view returns (uint) {
+    // Redeem tokens for items
+    function purchaseItem(uint8 _itemId) external {
+        require(items[_itemId].price != 0, "Item not found");
+        require(balanceOf(msg.sender) >= items[_itemId].price, "Insufficient balance");
+
+        burn(items[_itemId].price);
+
+        emit ItemPurchased(msg.sender, _itemId, items[_itemId].name, items[_itemId].price);
+    }
+
+    // Checking token balance - No need for an additional function as ERC20 provides balanceOf()
+    function getBalance() external view returns (uint256) {
         return balanceOf(msg.sender);
     }
+
+    // Burning tokens - Uses the ERC20Burnable function
+    function burnToken(uint256 _amount) external {
+        burn(_amount);
+    }
 }
+
 ```
     
 ## Testing
