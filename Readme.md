@@ -118,6 +118,31 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
 }
 
 ```
+To run this program, follow these steps:
+
+1. **Open Remix IDE**: Navigate to [Remix Ethereum](https://remix.ethereum.org/).
+2. **Create a New File**: Create a new Solidity file (e.g., `DegenToken.sol`) and paste your Solidity code.
+3. **Compile the Contract**: 
+   - Click on the "Solidity Compiler" tab in the left-hand sidebar.
+   - Select the compiler version `0.8.18` (or any compatible version).
+   - Click on the "Compile DegenToken.sol" button.
+4. **Deploy the Contract**:
+   - Go to the "Deploy & Run Transactions" tab in the left-hand sidebar.
+   - Select the `DegenToken` contract from the dropdown menu.
+   - Click on the "Deploy" button.
+   - Confirm the transaction in MetaMask.
+
+### Interacting with the Contract
+
+After deploying the contract, you can interact with its functions through the Remix interface:
+
+- **Minting Tokens**: Call the `mint` function to create new tokens (only available to the owner).
+- **Transferring Tokens**: Use the standard `transfer` function to send tokens to another address.
+- **Redeeming Tokens**: Call the `purchaseItem` function to redeem tokens for in-game items.
+- **Checking Balance**: Use the `balanceOf` function to check your token balance.
+- **Burning Tokens**: Call the `burn` function to destroy tokens from your balance.
+- **Game Mechanic**: Engage in the game by calling the `isLessThanFive` function with your bet.
+
     
 ## Testing
 The smart contract has been thoroughly tested to ensure that all functionalities work as expected. All tests have passed successfully.
